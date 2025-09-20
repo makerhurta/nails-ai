@@ -3,6 +3,8 @@ import { useState } from "react";
 function App() {
   const [message, setMessage] = useState<string>("");
   const [text, setText] = useState<string>("");
+  const [noteText, setNoteText] = useState<string>("");
+  const [notes, setNotes] = useState<Array<{ id: string; text: string; created_at: string }>>([]);
 
   async function checkHealth() {
     try {
@@ -45,25 +47,64 @@ function App() {
     }
   }
 
+  async function fetchNotes() {
+  try {
+    const resp = await fetch("http://localhost:3001/notes");
+    const data = await resp.json();
+    setNotes(data.notes ?? []);
+  } catch {
+    setMessage("❌ Error loading notes");
+  }
+}
+
+    async function addNote() {
+    try {
+        const resp = await fetch("http://localhost:3001/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: noteText }),
+        });
+
+        if (!resp.ok) {
+        const errBody = await resp.json().catch(() => ({}));
+        setMessage(`❌ Error: ${resp.status} ${errBody.error ?? ""}`);
+        return;
+        }
+
+        setNoteText("");     // vyčisti input
+        await fetchNotes();  // obnov zoznam
+        setMessage("✅ Note saved");
+    } catch {
+        setMessage("❌ Error saving note");
+    }
+    }
+
     return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>Nails AI – Frontend</h1>
+        <div style={{ marginTop: 24 }}>
+        <h2>Notes</h2>
 
-      <button onClick={checkHealth}>Check Health</button>
-      <button onClick={checkTime} style={{ marginLeft: 8 }}>Check Time</button>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <input
+            placeholder="Napíš poznámku"
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+            style={{ padding: 8, flex: 1 }}
+            />
+            <button onClick={addNote}>Add note</button>
+            <button onClick={fetchNotes}>Refresh</button>
+        </div>
 
-      <div style={{ marginTop: 16 }}>
-        <input
-          placeholder="Napíš text pre /echo"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          style={{ padding: 8, marginRight: 8 }}
-        />
-        <button onClick={sendEcho}>Send to /echo</button>
-      </div>
-
-      <p style={{ marginTop: 16 }}>{message}</p>
-    </div>
+        <ul>
+            {notes.map(n => (
+            <li key={n.id}>
+                {n.text}{" "}
+                <span style={{ color: "#666", fontSize: 12 }}>
+                ({new Date(n.created_at).toLocaleString()})
+                </span>
+            </li>
+            ))}
+        </ul>
+        </div>
   );
 }
 
