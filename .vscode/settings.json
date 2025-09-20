@@ -1,0 +1,18 @@
+{
+  // formátovať pri uložení
+  "editor.formatOnSave": true,
+
+  // Prettier ako default formatter
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // konzistentné odsadenie
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+
+  // voliteľné estetické voľby Prettiera:
+  "prettier.singleQuote": true,
+  "prettier.semi": true,
+  "prettier.trailingComma": "all",
+  "prettier.printWidth": 100
+
+}
